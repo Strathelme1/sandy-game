@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandy - Particle Sand Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #gameContainer {
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <h1>Sandy - Particle Sand Game</h1>
+        <select id="particleType">
+            <option value="sand">Sand</option>
+            <option value="water">Water</option>
+            <option value="wall">Wall</option>
+        </select>
+        <br><br>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const particleSelect = document.getElementById('particleType');
+        const PARTICLE_SIZE = 4;
+        let particles = [];
+
+        function createParticle(x, y, type) {
+            return { x, y, type };
+        }
+
+        function isOccupied(x, y) {
+            return particles.some(p => p.x === x && p.y === y);
+        }
+
+        function updateParticles() {
+            const newParticles = [];
+            particles.forEach(particle => {
+                const { x, y, type } = particle;
+                
+                if (type === 'sand') {
+                    if (y < canvas.height - PARTICLE_SIZE && !isOccupied(x, y + PARTICLE_SIZE)) {
+                        particle.y += PARTICLE_SIZE;
+                    } else if (y < canvas.height - PARTICLE_SIZE) {
+                        if (!isOccupied(x - PARTICLE_SIZE, y + PARTICLE_SIZE)) {
+                            particle.x -= PARTICLE_SIZE;
+                            particle.y += PARTICLE_SIZE;
+                        } else if (!isOccupied(x + PARTICLE_SIZE, y + PARTICLE_SIZE)) {
+                            particle.x += PARTICLE_SIZE;
+                            particle.y += PARTICLE_SIZE;
+                        }
+                    }
+                } else if (type === 'water') {
+                    if (y < canvas.height - PARTICLE_SIZE && !isOccupied(x, y + PARTICLE_SIZE)) {
+                        particle.y += PARTICLE_SIZE;
+                    } else if (!isOccupied(x - PARTICLE_SIZE, y)) {
+                        particle.x -= PARTICLE_SIZE;
+                    } else if (!isOccupied(x + PARTICLE_SIZE, y)) {
+                        particle.x += PARTICLE_SIZE;
+                    }
+                }
+                
+                newParticles.push(particle);
+            });
+            particles = newParticles;
+        }
+
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(particle => {
+                if (particle.type === 'sand') {
+                    ctx.fillStyle = 'yellow';
+                } else if (particle.type === 'water') {
+                    ctx.fillStyle = 'blue';
+                } else if (particle.type === 'wall') {
+                    ctx.fillStyle = 'gray';
+                }
+                ctx.fillRect(particle.x, particle.y, PARTICLE_SIZE, PARTICLE_SIZE);
+            });
+        }
+
+        function gameLoop() {
+            updateParticles();
+            drawParticles();
+            requestAnimationFrame(gameLoop);
+        }
+
+        canvas.addEventListener('mousedown', handleCanvasClick);
+        canvas.addEventListener('mousemove', (e) => {
+            if (e.buttons === 1) handleCanvasClick(e);
+        });
+
+        function handleCanvasClick(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((event.clientX - rect.left) / PARTICLE_SIZE) * PARTICLE_SIZE;
+            const y = Math.floor((event.clientY - rect.top) / PARTICLE_SIZE) * PARTICLE_SIZE;
+            particles.push(createParticle(x, y, particleSelect.value));
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
