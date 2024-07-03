@@ -1,7 +1,7 @@
 {
   "name": "sandy-game",
   "version": "0.1.0",
-  "homepage": "https://Strathelme1.github.io/particle-sand-game",
+  "homepage": "https://Strathelme1.github.io/sandy",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
